@@ -1,91 +1,101 @@
-//Jack Peng
-import javafx.geometry.Pos;
-import javafx.stage.Stage;
-import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.VBox;
-import javafx.scene.text.Font;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.GridPane; 
-import javafx.geometry.Insets; 
-import java.util.*;
-import javafx.scene.paint.Color;
-import java.net.*;
-import java.io.*;
+package Client;
+// Author: Kidus Asmare Ayele. Scene to connect client to the server.
 
-// Since using SceneManager, I disable some functions first.
-public class SettingsScene{
+import java.net.Socket;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+
+public class SettingsScene extends SceneBasic {
+	private String host;				// Stores the entered host name
+	private String port;				// Stores the entered port number
+	private GridPane grid;					// Grid container for layout
+	private Label errorLabel;
+	private TextField hostInput;
+	private TextField portInput;	
 	
-	static HashMap<String, Account> dataSet = new HashMap<String, Account>();
-	
-	public static void main(String[] args) {
-		readFile("accounts.xml");
-	}
+	public SettingsScene() {
+		super("Connection Settings");
 		
-	public static HashMap<String,Account> readFile(String filename){
-		File dataFile = new File(filename);
-		if ( ! dataFile.exists() ) {
-				System.out.println("No data file found.");
-				System.exit(1);
+		// Set the title of the scene
+		Label title = new Label(super.titleText);
+		title.setFont(new Font(40));
+		
+		Label hostLabel = new Label("Host");
+		hostLabel.setFont(new Font(15));
+		// Input field for the host name
+		hostInput = new TextField();
+		
+		Label portLabel = new Label("Port");
+		portLabel.setFont(new Font(15));
+		// Input field for the port number
+		portInput = new TextField();
+		
+		Button applyButton = new Button("Apply");
+		// Onclick set the host and port variables to inputs and call the login method
+		applyButton.setOnAction(e -> {this.host = hostInput.getText();
+									  this.port = portInput.getText();
+									  apply();});
+		
+		Button clearButton = new Button("Clear");
+		// Onclick resets all inputs and error message
+		clearButton.setOnAction(e -> cancel());
+		
+		errorLabel = new Label("");
+		errorLabel.setFont(new Font(10));
+		errorLabel.setTextFill(Color.RED);
+		
+		grid = new GridPane();
+		grid.setAlignment(Pos.CENTER);
+		grid.setVgap(10);	// Vertical margin between rows
+		grid.setHgap(5);	// Horizontal margin between columns
+		
+		HBox buttonContain = new HBox(10,applyButton, clearButton);
+		
+		// Sets the layout in the grid
+		grid.add(hostLabel, 0, 0);
+		grid.add(hostInput, 1, 0);
+		grid.add(portLabel, 0, 1);
+		grid.add(portInput, 1, 1);
+		grid.add(buttonContain, 1, 2);
+		grid.add(errorLabel, 1, 3);
+
+		// Vertically contains all items within the scene
+		VBox container = new VBox(30, title, grid);
+		container.setAlignment(Pos.CENTER);
+
+		// Positions the container at the center of the screen
+		BorderPane root = new BorderPane(container);
+		BorderPane.setAlignment(container, Pos.CENTER);
+		
+		super.scene = new Scene(root, 400, 300);	// Sets the scene
+	}
+	
+	// Sets the socket connection for the client to the server
+	public void apply() {
+		try {
+			Socket connection = new Socket(host, Integer.parseInt(port));
+			SceneManager.setSocket(connection);		// Sets the socket connection
+			errorLabel.setText("");
+			SceneManager.setLoginScene();
+		} catch (Exception e) {
+			errorLabel.setText("Error trying to connect to server");
 		}
-		try( Scanner scanner = new Scanner(dataFile) ) {
-			while (scanner.hasNextLine()) {
-				String input = scanner.nextLine();
-				int separatorPosition = input.indexOf('<');
-				int separatorPosition2 = input.indexOf('>');
-				String next = input.substring(separatorPosition + 1, separatorPosition2);
-				if(next.equals("PLAYER")) {
-					String input1 = "";
-					while(scanner.hasNextLine() && !input1.equals("/PLAYER")){
-						input1 = scanner.nextLine();
-						String currentLine = input1;
-						int separatorPosition3 = input1.indexOf('<');
-						int separatorPosition4 = input1.indexOf('>');
-						int separatorPosition5 = input1.indexOf('<',separatorPosition4+1);
-						input1 = input1.substring(separatorPosition3 + 1, separatorPosition4);
-						if(input1.equals("id")){
-    						String id = currentLine.substring(separatorPosition4 + 1, separatorPosition5);
-    						//line of username
-    						String usernameLine = scanner.nextLine();
-    						int separatorPosition6 = usernameLine.indexOf('>');
-							int separatorPosition7 = usernameLine.indexOf('<',separatorPosition6+1);
-    						String username = usernameLine.substring(separatorPosition6 + 1, separatorPosition7);
-    						//line of passowrd
-    						String passwordLine = scanner.nextLine();
-    						int separatorPosition8 = passwordLine.indexOf('>');
-							int separatorPosition9 = passwordLine.indexOf('<',separatorPosition8+1);
-    						String password = passwordLine.substring(separatorPosition8 + 1, separatorPosition9);
-    						//line of profile
-    						String backLine = scanner.nextLine();
-    						int separatorPositionA = backLine.indexOf('>');
-							int separatorPositionB = backLine.indexOf('<',separatorPositionA+1);
-    						String backGround= backLine.substring(separatorPositionA + 1, separatorPositionB);
-    						
-    						String nickLine = scanner.nextLine();
-    						int separatorPositionC = nickLine.indexOf('>');
-							int separatorPositionD = nickLine.indexOf('<',separatorPositionC+1);
-    						String nickname= nickLine.substring(separatorPositionC + 1, separatorPositionD );
-    						
-    						Account player = new Account(Integer.parseInt(id),username, password, backGround,nickname);
-    						dataSet.put(id, player);	
-    					}
-    					
-					}
-				}
-					
-				
-				}
-			 for (String key : dataSet.keySet()) {
-			        System.out.print("Key = " + key + ", ");
-			        System.out.println("Data = " + dataSet.get(key));
-			        }
-				
-		}
-		catch (IOException e) {
-			System.out.println("Error in data file.");
-			System.exit(1);
-		}
-		return dataSet;
+	}
+	
+	// Resets all inputs and error and redirects to the login scene
+	public void cancel() {
+		hostInput.setText("");
+		portInput.setText("");
+		errorLabel.setText("");
+		SceneManager.setLoginScene();
 	}
 }

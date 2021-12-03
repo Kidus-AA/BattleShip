@@ -10,6 +10,8 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -23,6 +25,11 @@ public class GameScene extends SceneBasic {
 	private GridPane grid;					// Grid container for layout
 	private Label errorLabel;				// Error label on the scene
 	private Button boardButton;
+	private Button attackButton;
+	private String xCoord;
+	private String yCoord;
+	private TextField xC;
+	private TextField yC;
 	private Socket connection;				// Socket connection to server
 	
 	public GameScene() {
@@ -32,10 +39,23 @@ public class GameScene extends SceneBasic {
 		Label title = new Label(super.titleText);
 		title.setFont(new Font(40));
 		
+		Label xCoordinate = new Label("Username");
+		xCoordinate.setFont(new Font(15));
+		// Input field for the username
+		xC = new TextField();
+		
+		Label yCoordinate = new Label("Password");
+		yCoordinate.setFont(new Font(15));
+		// Input field for the password
+		yC = new TextField();
 		
 		boardButton = new Button("BOARDS");
 		// Onclick set the username and password variables to inputs and call the login method
 		boardButton.setOnAction(e -> initializeBoard());
+		
+		attackButton = new Button("ATTACK");
+		// Onclick set the username and password variables to inputs and call the login method
+		attackButton.setOnAction(e -> hitBoard());
 		
 		errorLabel = new Label("");
 		errorLabel.setFont(new Font(10));
@@ -46,9 +66,13 @@ public class GameScene extends SceneBasic {
 		grid.setVgap(10);	// Vertical margin between rows
 		grid.setHgap(5);	// Horizontal margin between columns
 		
-		HBox buttonContain = new HBox(10, boardButton);
+		HBox buttonContain = new HBox(10, boardButton, attackButton);
 		
 		// Sets the layout in the grid
+		grid.add(xCoordinate, 0, 0);
+		grid.add(xC, 1, 0);
+		grid.add(yCoordinate, 0, 1);
+		grid.add(yC, 1, 1);
 		grid.add(buttonContain, 1, 2);
 		grid.add(errorLabel, 1, 3);
 
@@ -61,6 +85,34 @@ public class GameScene extends SceneBasic {
 		BorderPane.setAlignment(container, Pos.CENTER);
 		
 		super.scene = new Scene(root, 400, 300);	// Sets the scene
+	}
+	
+	public void hitBoard() {
+		try {
+			//Read other player move then hit
+			//Check if there is any move for the first player first move
+			connection = SceneManager.getSocket();
+			PrintWriter outgoing = new PrintWriter( new OutputStreamWriter(connection.getOutputStream()));
+			outgoing.println("NEXT");		// Request to login that will be sent to the server
+			outgoing.flush();
+			BufferedReader incoming = new BufferedReader( new InputStreamReader(connection.getInputStream()));
+			
+			
+			String moveRes = incoming.readLine();
+			if(moveRes.equals("HIT") || moveRes.equals("MISS")) {
+				String coordinates = incoming.readLine();
+				System.out.println(coordinates);
+			} else if(moveRes.equals("NOMOVE")) {
+				
+			}
+		
+			outgoing.println(xC.getText() + "," + yC.getText());
+			outgoing.flush();				// Information sent to the server
+			String res = incoming.readLine();
+			System.out.println(res);
+		} catch(Exception e) {
+			System.out.println("PLAYER READY ERROR: " + e);
+		}
 	}
 	
 	public void initializeBoard() {
