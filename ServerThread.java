@@ -55,10 +55,8 @@ public class ServerThread extends Thread {
 				} else if(command.equals("INITG")) {
 					initializeGame(player1Input, player1Output, player2Input, player2Output);
 				} else if(command.equals("INITB")) {
-					initializeBoard(player1Output, player2Output);
-				}
-				
-				else if(command.equals("NEXT")) {
+					initializeBoard(player1Output, player2Output, currentPlayer);
+				} else if(command.equals("NEXT")) {
 					nextMove(player1Input, player1Output, player2Input, player2Output);
 				}
 				
@@ -124,12 +122,15 @@ public class ServerThread extends Thread {
 		}
 	}
 	
-	public void initializeBoard(PrintWriter outgoingP1, PrintWriter outgoingP2) {
+	public void initializeBoard(PrintWriter outgoingP1, PrintWriter outgoingP2, int currentPlayer) {
 		try {
-			outgoingP1.println(convertBoard(player1Board));
-			outgoingP2.println(convertBoard(player1Board));
-			outgoingP1.flush();
-			outgoingP2.flush();
+			if(currentPlayer == 0) {
+				outgoingP1.println(convertBoard(player1Board));
+				outgoingP1.flush();
+			} else if (currentPlayer == 1) {
+				outgoingP2.println(convertBoard(player2Board));
+				outgoingP2.flush();
+			}
 		} catch(Exception e) {
 			System.out.println("INITIALIZE BOARD ERROR: " + e);
 		}
@@ -137,23 +138,34 @@ public class ServerThread extends Thread {
 	
 	public void nextMove(BufferedReader incomingP1, PrintWriter outgoingP1, BufferedReader incomingP2, PrintWriter outgoingP2) {
 		try {
+			if(currentRound == 0) {
+				System.out.println("HERE");
+				outgoingP1.println("NOMOVE");
+				outgoingP1.flush();
+			} 
+			
 			if(currentRound % 2 == 0) {
 				String[] coordinates = incomingP1.readLine().split(",");
+				System.out.println("HERE");
 				if(player2Board[Integer.parseInt(coordinates[0])][Integer.parseInt(coordinates[1])] == 1) {
 					outgoingP1.println("HIT");
 					outgoingP2.println("HIT");
+					outgoingP2.println(coordinates[0] + "," + coordinates[1]);
 				} else {
 					outgoingP1.println("MISS");
 					outgoingP2.println("MISS");
+					outgoingP2.println(coordinates[0] + "," + coordinates[1]);
 				}
 			} else {
 				String[] coordinates = incomingP2.readLine().split(",");
 				if(player1Board[Integer.parseInt(coordinates[0])][Integer.parseInt(coordinates[1])] == 1) {
 					outgoingP1.println("HIT");
 					outgoingP2.println("HIT");
+					outgoingP1.println(coordinates[0] + "," + coordinates[1]);
 				} else {
 					outgoingP1.println("MISS");
 					outgoingP2.println("MISS");
+					outgoingP1.println(coordinates[0] + "," + coordinates[1]);
 				}
 			}
 			currentRound++;
@@ -173,7 +185,66 @@ public class ServerThread extends Thread {
 				player2Board[i][j] = 0;
 			}
 		}
+		
+		for(int i = 0; i < 2; i++) {
+//			int[][] copyArray = (i == 0) ? player1Board : player2Board;
+			for(int j = 0; j < 3; j++) { // to draw three ships
+				int direction = (int)(Math.random() * 2);
+				int xPos = (int)(Math.random() * 5);
+				int yPos = (int)(Math.random() * 5);
+				player1Board[xPos][yPos] = 1;
+			}
+		}
 	}
+//	
+//	private boolean checkSpace(int[][] board, int direction, int xPos, int yPos, int sign) {
+//		if(direction == 0) {
+//			if(sign == 0) {
+//				if(board[xPos][yPos] == 1 || board[xPos + 1][yPos] == 1 || board[xPos + 2][yPos] == 1) {
+//					return false;
+//				}
+//			} else if (sign == 1) {
+//				if(board[xPos][yPos] == 1 || board[xPos - 1][yPos] == 1 || board[xPos - 2][yPos] == 1) {
+//					return false;
+//				}
+//			}
+//		} else {
+//			if(sign == 0) {
+//				if(board[xPos][yPos] == 1 || board[xPos][yPos + 1] == 1 || board[xPos][yPos + 2] == 1) {
+//					return false;
+//				}
+//			} else if (sign == 1) {
+//				if(board[xPos][yPos] == 1 || board[xPos][yPos - 1] == 1 || board[xPos][yPos - 2] == 1) {
+//					return false;
+//				}
+//			}
+//		}
+//		return true;
+//	}
+//	
+//	private void inputShipRows(int[][] board, int xPos, int yPos, int sign) {
+//		if(sign == 0) {	// moving in the positive direction of the row
+//			board[xPos][yPos] = 1;
+//			board[xPos + 1][yPos] = 1;
+//			board[xPos + 2][yPos] = 1;
+//		} else if(sign == 1) {	// moving the negative direction of the row
+//			board[xPos][yPos] = 1;
+//			board[xPos - 1][yPos] = 1;
+//			board[xPos - 2][yPos] = 1;
+//		}
+//	}
+//	
+//	private void inputShipColumns(int[][] board, int xPos, int yPos, int sign) {
+//		if(sign == 0) {	// moving in the positive direction of the row
+//			board[xPos][yPos] = 1;
+//			board[xPos][yPos + 1] = 1;
+//			board[xPos][yPos + 2] = 1;
+//		} else if(sign == 1) {	// moving the negative direction of the row
+//			board[xPos][yPos] = 1;
+//			board[xPos][yPos + 1] = 1;
+//			board[xPos][yPos + 2] = 1;
+//		}
+//	}
 	
 	private String convertBoard(int[][] board) {
 		String boardStr = "";
