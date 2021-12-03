@@ -1,0 +1,14 @@
+<ACCOUNTS>
+<PLAYER>
+<id>1</id>
+<username>kidus</username>
+<password>kidus</password>
+<level>1</level>
+</PLAYER>
+<PLAYER>
+<id>2</id>
+<username>jack</username>
+<password>jack</password>
+<level>1</level>
+</PLAYER>
+</ACCOUNTS>
