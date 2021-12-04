@@ -6,7 +6,9 @@ import java.util.*;
 
 public class ServerThread extends Thread {
 	private HashMap<String, Account> accounts;
+	private Account account1;
 	private Socket player1;
+	private Account account2;
 	private Socket player2;
 	private BufferedReader player1Input;
 	private PrintWriter player1Output;
@@ -55,13 +57,17 @@ public class ServerThread extends Thread {
 				} else if(command.equals("INITG")) {
 					initializeGame(player1Input, player1Output, player2Input, player2Output);
 				} else if(command.equals("INITB")) {
-					initializeBoard(player1Output, player2Output, currentPlayer);
+					initializeBoard(player1Output, player2Output);
 				} else if(command.equals("NEXT")) {
 					nextMove(player1Input, player1Output, player2Input, player2Output);
+				} else if(command.equals("SAVE")) {
+					saveGame();
+				} else if(command.equals("LOAD")) {
+					loadGame();
+				} else if(command.equals("CHANGEP")) {
+					changePassword(player1Input, player1Output, player2Input, player2Output);
 				}
-				
-				// Get setting changes
-				// Save game
+				// change password
 			}
 		} catch(Exception e) {
 			System.out.println("SERVER THREAD ERROR: " + e);
@@ -79,6 +85,11 @@ public class ServerThread extends Thread {
             	Account account = accounts.get(id);
             	if (account.getUsername().equals(username)) {
                     if (account.verifyPassword(password) == true) {
+                    	if(currentPlayer == 0) {
+                    		account1 = account;
+                    	} else if(currentPlayer == 1) {
+                    		account2 = account;
+                    	}
                     	outgoing.println("LOGGEDIN");
                     	outgoing.flush();
                         passError = false;
@@ -122,7 +133,7 @@ public class ServerThread extends Thread {
 		}
 	}
 	
-	public void initializeBoard(PrintWriter outgoingP1, PrintWriter outgoingP2, int currentPlayer) {
+	public void initializeBoard(PrintWriter outgoingP1, PrintWriter outgoingP2) {
 		try {
 			if(currentPlayer == 0) {
 				outgoingP1.println(convertBoard(player1Board));
@@ -192,8 +203,64 @@ public class ServerThread extends Thread {
 				int direction = (int)(Math.random() * 2);
 				int xPos = (int)(Math.random() * 5);
 				int yPos = (int)(Math.random() * 5);
-				player1Board[xPos][yPos] = 1;
+				if(i == 0) {
+					player1Board[xPos][yPos] = 1;
+				} else {
+					player2Board[xPos][yPos] = 1;
+				}				
 			}
+		}
+	}
+	
+	public void saveGame() {
+		try {
+			FileOutputStream writeFile = new FileOutputStream("gameData");
+			writeFile.write(currentRound);
+			for(int i = 0; i < player1Board.length; i++) {
+				for(int j = 0; j < player1Board[i].length; j++) {
+					writeFile.write(player1Board[i][j]);
+				}
+			}
+			for(int i = 0; i < player2Board.length; i++) {
+				for(int j = 0; j < player2Board[i].length; j++) {
+					writeFile.write(player2Board[i][j]);
+				}
+			}
+			writeFile.close();
+		} catch(Exception e) {
+			System.out.println("SAVE GAME ERROR: " + e);
+		}	
+	}
+	
+	public void loadGame() {
+		try {
+			FileInputStream readFile = new FileInputStream("gameData");
+			int savedCurrRound = readFile.read();
+			currentRound = savedCurrRound;
+			for(int i = 0; i < player1Board.length; i++) {
+				for(int j = 0; j < player1Board[i].length; j++) {
+					int savedP1Board = readFile.read();
+					player1Board[i][j] = savedP1Board;
+				}
+			}
+			
+			for(int i = 0; i < player2Board.length; i++) {
+				for(int j = 0; j < player2Board[i].length; j++) {
+					int savedP2Board = readFile.read();
+					player2Board[i][j] = savedP2Board;
+				}
+			}
+			readFile.close();
+		} catch(Exception e) {
+			System.out.println("LOAD GAME ERROR: " + e);
+		}
+	}
+	
+	public void changePassword(BufferedReader incomingP1, PrintWriter outgoingP1, BufferedReader incomingP2, PrintWriter outgoingP2) {
+		if(currentPlayer == 0) {
+			
+		} else if(currentPlayer == 1) {
+			
 		}
 	}
 //	
