@@ -20,6 +20,10 @@ public class ServerThread extends Thread {
 	private final int columnDimension = 5;
 	private int currentRound;
 	private int currentPlayer = 0;
+	private int p1WinCheck = 0;
+	private boolean p1Winner = false;
+	private int p2WinCheck = 0;
+	private boolean p2Winner = false;
 	
 	public ServerThread(Socket player1, Socket player2) {
 		accounts = AccountsReader.readFile("accounts.xml");
@@ -150,38 +154,66 @@ public class ServerThread extends Thread {
 	public void nextMove(BufferedReader incomingP1, PrintWriter outgoingP1, BufferedReader incomingP2, PrintWriter outgoingP2) {
 		try {
 			if(currentRound == 0) {
-				System.out.println("HERE");
 				outgoingP1.println("NOMOVE");
 				outgoingP1.flush();
 			} 
 			
-			if(currentRound % 2 == 0) {
-				String[] coordinates = incomingP1.readLine().split(",");
-				System.out.println("HERE");
-				if(player2Board[Integer.parseInt(coordinates[0])][Integer.parseInt(coordinates[1])] == 1) {
-					outgoingP1.println("HIT");
-					outgoingP2.println("HIT");
-					outgoingP2.println(coordinates[0] + "," + coordinates[1]);
+			if(!p1Winner && !p2Winner) {
+				if(currentRound % 2 == 0) {
+					String[] coordinates = incomingP1.readLine().split(",");
+					if(player2Board[Integer.parseInt(coordinates[0])][Integer.parseInt(coordinates[1])] == 1) {
+						p1WinCheck++;
+						if(p1WinCheck == 3 && p2WinCheck < 3) {
+							p1Winner = true;
+							outgoingP1.println("WIN");
+							outgoingP2.println("LOSE");
+							outgoingP2.println(coordinates[0] + "," + coordinates[1]);
+						} else if(p1WinCheck == 3 && p2WinCheck == 3) {
+							p1Winner = true;
+							p2Winner = true;
+							outgoingP1.println("DRAW");
+							outgoingP2.println("DRAW");
+							outgoingP2.println(coordinates[0] + "," + coordinates[1]);
+						} else {
+							outgoingP1.println("HIT");
+							outgoingP2.println("HIT");
+							outgoingP2.println(coordinates[0] + "," + coordinates[1]);
+						}
+					} else {
+						outgoingP1.println("MISS");
+						outgoingP2.println("MISS");
+						outgoingP2.println(coordinates[0] + "," + coordinates[1]);
+					}
 				} else {
-					outgoingP1.println("MISS");
-					outgoingP2.println("MISS");
-					outgoingP2.println(coordinates[0] + "," + coordinates[1]);
+					String[] coordinates = incomingP2.readLine().split(",");
+					if(player1Board[Integer.parseInt(coordinates[0])][Integer.parseInt(coordinates[1])] == 1) {
+						p2WinCheck++;
+						if(p2WinCheck == 3 && p1WinCheck < 3) {
+							p2Winner = true;
+							outgoingP1.println("LOSE");
+							outgoingP2.println("WIN");
+							outgoingP1.println(coordinates[0] + "," + coordinates[1]);
+						} else if(p2WinCheck == 3 && p1WinCheck == 3) {
+							p1Winner = true;
+							p2Winner = true;
+							outgoingP1.println("DRAW");
+							outgoingP2.println("DRAW");
+							outgoingP1.println(coordinates[0] + "," + coordinates[1]);
+						} else {
+							outgoingP1.println("HIT");
+							outgoingP2.println("HIT");
+							outgoingP1.println(coordinates[0] + "," + coordinates[1]);
+						}
+					} else {
+						outgoingP1.println("MISS");
+						outgoingP2.println("MISS");
+						outgoingP1.println(coordinates[0] + "," + coordinates[1]);
+					}
 				}
-			} else {
-				String[] coordinates = incomingP2.readLine().split(",");
-				if(player1Board[Integer.parseInt(coordinates[0])][Integer.parseInt(coordinates[1])] == 1) {
-					outgoingP1.println("HIT");
-					outgoingP2.println("HIT");
-					outgoingP1.println(coordinates[0] + "," + coordinates[1]);
-				} else {
-					outgoingP1.println("MISS");
-					outgoingP2.println("MISS");
-					outgoingP1.println(coordinates[0] + "," + coordinates[1]);
-				}
+				currentRound++;
+				outgoingP1.flush();
+				outgoingP2.flush();
 			}
-			currentRound++;
-			outgoingP1.flush();
-			outgoingP2.flush();
 		} catch(Exception e) {
 			System.out.println("NEXT MOVE ERROR: " + e);
 		}
@@ -190,6 +222,8 @@ public class ServerThread extends Thread {
 	// Randomize and place the ships here
 	private void startGame() {
 		currentRound = 0;
+		p1Winner = false;
+		p2Winner = false;
 		for(int i = 0; i < rowDimension; i++) {
 			for(int j = 0; j < columnDimension; j++) {
 				player1Board[i][j] = 0;
@@ -198,21 +232,21 @@ public class ServerThread extends Thread {
 		}
 		
 		for(int i = 0; i < 2; i++) {
-//			int[][] copyArray = (i == 0) ? player1Board : player2Board;
+			int[][] copyArray = (i == 0) ? player1Board : player2Board;
 			for(int j = 0; j < 3; j++) { // to draw three ships
 				int direction = (int)(Math.random() * 2);
 				int xPos = (int)(Math.random() * 5);
 				int yPos = (int)(Math.random() * 5);
-				if(i == 0) {
-					player1Board[xPos][yPos] = 1;
-				} else {
-					player2Board[xPos][yPos] = 1;
-				}				
+				while(copyArray[xPos][yPos] == 1) {
+					xPos = (int)(Math.random() * 5);
+					yPos = (int)(Math.random() * 5);
+				}
+				copyArray[xPos][yPos] = 1;
 			}
 		}
 	}
 	
-	public void saveGame() {
+	synchronized public void saveGame() {
 		try {
 			FileOutputStream writeFile = new FileOutputStream("gameData");
 			writeFile.write(currentRound);
@@ -232,7 +266,7 @@ public class ServerThread extends Thread {
 		}	
 	}
 	
-	public void loadGame() {
+	synchronized public void loadGame() {
 		try {
 			FileInputStream readFile = new FileInputStream("gameData");
 			int savedCurrRound = readFile.read();
@@ -256,7 +290,7 @@ public class ServerThread extends Thread {
 		}
 	}
 	
-	public void changePassword(BufferedReader incomingP1, PrintWriter outgoingP1, BufferedReader incomingP2, PrintWriter outgoingP2) {
+	synchronized public void changePassword(BufferedReader incomingP1, PrintWriter outgoingP1, BufferedReader incomingP2, PrintWriter outgoingP2) {
 		if(currentPlayer == 0) {
 			
 		} else if(currentPlayer == 1) {
