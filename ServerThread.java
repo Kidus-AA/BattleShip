@@ -1,3 +1,5 @@
+// Author: Kidus Asmare Ayele. Server commands for client communication
+
 package Server;
 
 import java.io.*;
@@ -42,34 +44,38 @@ public class ServerThread extends Thread {
 			
 			while(true) {
 				String command = "";
-				if(player1Input.ready()) {
+				if(player1Input.ready()) {	// If client 1 has sent a command
 					command = player1Input.readLine();
 					currentPlayer = 0;
-				} else if(player2Input.ready()) {
+				} else if(player2Input.ready()) { // If client 2 has sent a command
 					command = player2Input.readLine();
 					currentPlayer = 1;
 				}
 				
 				if(command.equals("QUIT")) {
 					break;
-				} else if(command.equals("LOGIN")) {
+				} else if(command.equals("LOGIN")) {	// Determins which player sent the command and calls method
 					if(currentPlayer == 0) {
 						login(player1Input, player1Output);
 					} else if(currentPlayer == 1) {
 						login(player2Input, player2Output);
 					}
-				} else if(command.equals("INITG")) {
+				} else if(command.equals("INITG")) {	// Initalizes the game
 					initializeGame(player1Input, player1Output, player2Input, player2Output);
-				} else if(command.equals("INITB")) {
+				} else if(command.equals("INITB")) {	// Initializes the board 
 					initializeBoard(player1Output, player2Output);
-				} else if(command.equals("NEXT")) {
+				} else if(command.equals("NEXT")) {	// Computes the next move for the clients
 					nextMove(player1Input, player1Output, player2Input, player2Output);
-				} else if(command.equals("SAVE")) {
+				} else if(command.equals("SAVE")) {	// Saves the game information
 					saveGame();
-				} else if(command.equals("LOAD")) {
+				} else if(command.equals("LOAD")) {	// Loads the game information
 					loadGame();
-				} else if(command.equals("CHANGEP")) {
-					changePassword(player1Input, player1Output, player2Input, player2Output);
+				} else if(command.equals("CHANGEP")) {	// Changes the player's passwords
+					if(currentPlayer == 0) {
+						changePassword(player1Input, player1Output);
+					} else if(currentPlayer == 1) {
+						changePassword(player2Input, player2Output);
+					}
 				}
 				// change password
 			}
@@ -89,6 +95,7 @@ public class ServerThread extends Thread {
             	Account account = accounts.get(id);
             	if (account.getUsername().equals(username)) {
                     if (account.verifyPassword(password) == true) {
+                    	// If the user and password are correct
                     	if(currentPlayer == 0) {
                     		account1 = account;
                     	} else if(currentPlayer == 1) {
@@ -126,6 +133,8 @@ public class ServerThread extends Thread {
 				command = incomingP1.readLine();
 			}
 			
+			// If one of the clients are ready it waits for the other client to get ready
+			// When both are ready it sends a command to both clients
 			if(command.equals("INITG")) {
 				outgoingP1.println("READY");
 				outgoingP2.println("READY");
@@ -139,6 +148,7 @@ public class ServerThread extends Thread {
 	
 	public void initializeBoard(PrintWriter outgoingP1, PrintWriter outgoingP2) {
 		try {
+			// Sends the current board information of the players to the clients
 			if(currentPlayer == 0) {
 				outgoingP1.println(convertBoard(player1Board));
 				outgoingP1.flush();
@@ -153,17 +163,22 @@ public class ServerThread extends Thread {
 	
 	public void nextMove(BufferedReader incomingP1, PrintWriter outgoingP1, BufferedReader incomingP2, PrintWriter outgoingP2) {
 		try {
+			// For the first client calling NEXT
+			// It should not expect coordinates of a previous move
 			if(currentRound == 0) {
 				outgoingP1.println("NOMOVE");
 				outgoingP1.flush();
 			} 
 			
+			// While there is no winner
 			if(!p1Winner && !p2Winner) {
-				if(currentRound % 2 == 0) {
+				if(currentRound % 2 == 0) {	// Client 1 turn
 					String[] coordinates = incomingP1.readLine().split(",");
+					// If it hits the board
+					// Sends the result of and the coordinates of where they hit
 					if(player2Board[Integer.parseInt(coordinates[0])][Integer.parseInt(coordinates[1])] == 1) {
 						p1WinCheck++;
-						if(p1WinCheck == 3 && p2WinCheck < 3) {
+						if(p1WinCheck == 3 && p2WinCheck < 3) {	// If the client has won
 							p1Winner = true;
 							outgoingP1.println("WIN");
 							outgoingP2.println("LOSE");
@@ -184,7 +199,7 @@ public class ServerThread extends Thread {
 						outgoingP2.println("MISS");
 						outgoingP2.println(coordinates[0] + "," + coordinates[1]);
 					}
-				} else {
+				} else {	// Client 2 turn
 					String[] coordinates = incomingP2.readLine().split(",");
 					if(player1Board[Integer.parseInt(coordinates[0])][Integer.parseInt(coordinates[1])] == 1) {
 						p2WinCheck++;
@@ -219,11 +234,12 @@ public class ServerThread extends Thread {
 		}
 	}
 	
-	// Randomize and place the ships here
+	// Randomizes and places ships on the player's boards
 	private void startGame() {
 		currentRound = 0;
 		p1Winner = false;
 		p2Winner = false;
+		// Initially all filled up with 0
 		for(int i = 0; i < rowDimension; i++) {
 			for(int j = 0; j < columnDimension; j++) {
 				player1Board[i][j] = 0;
@@ -231,10 +247,10 @@ public class ServerThread extends Thread {
 			}
 		}
 		
+		// Generates random x and y positions to place ships on the board
 		for(int i = 0; i < 2; i++) {
 			int[][] copyArray = (i == 0) ? player1Board : player2Board;
-			for(int j = 0; j < 3; j++) { // to draw three ships
-				int direction = (int)(Math.random() * 2);
+			for(int j = 0; j < 3; j++) { // Three ships per player
 				int xPos = (int)(Math.random() * 5);
 				int yPos = (int)(Math.random() * 5);
 				while(copyArray[xPos][yPos] == 1) {
@@ -249,12 +265,15 @@ public class ServerThread extends Thread {
 	synchronized public void saveGame() {
 		try {
 			FileOutputStream writeFile = new FileOutputStream("gameData");
-			writeFile.write(currentRound);
+			writeFile.write(currentRound);	// Writes the round they are on
+			// Writes client 1 board
 			for(int i = 0; i < player1Board.length; i++) {
 				for(int j = 0; j < player1Board[i].length; j++) {
 					writeFile.write(player1Board[i][j]);
 				}
 			}
+			
+			// Writes client 2 board
 			for(int i = 0; i < player2Board.length; i++) {
 				for(int j = 0; j < player2Board[i].length; j++) {
 					writeFile.write(player2Board[i][j]);
@@ -270,7 +289,8 @@ public class ServerThread extends Thread {
 		try {
 			FileInputStream readFile = new FileInputStream("gameData");
 			int savedCurrRound = readFile.read();
-			currentRound = savedCurrRound;
+			currentRound = savedCurrRound;	// Reads the current round
+			// Reads board date for client 1
 			for(int i = 0; i < player1Board.length; i++) {
 				for(int j = 0; j < player1Board[i].length; j++) {
 					int savedP1Board = readFile.read();
@@ -278,6 +298,7 @@ public class ServerThread extends Thread {
 				}
 			}
 			
+			// Reads board data for client 2
 			for(int i = 0; i < player2Board.length; i++) {
 				for(int j = 0; j < player2Board[i].length; j++) {
 					int savedP2Board = readFile.read();
@@ -290,63 +311,53 @@ public class ServerThread extends Thread {
 		}
 	}
 	
-	synchronized public void changePassword(BufferedReader incomingP1, PrintWriter outgoingP1, BufferedReader incomingP2, PrintWriter outgoingP2) {
-		if(currentPlayer == 0) {
+	synchronized public void changePassword(BufferedReader incoming, PrintWriter outgoing) {
+		try {
+			Account userAccount;
+			String oldPass = incoming.readLine();
+            String newPass = incoming.readLine();
+			if(currentPlayer == 0) {
+				userAccount = account1;
+			} else {
+				userAccount = account2;
+			}
 			
-		} else if(currentPlayer == 1) {
+			if (!userAccount.verifyPassword(oldPass)) {
+                // Send error message for an invalid password
+                outgoing.println("Old Password is incorrect");
+                outgoing.flush();
+                return;
+            } else if (newPass.length() == 0) {
+                // Send error message for an invalid password
+                outgoing.println("New Password can not be empty");
+                outgoing.flush();
+                return;
+            }
 			
+			// Change userAccount's password
+            userAccount.setPassword(newPass);
+            
+            PrintWriter writeFile = new PrintWriter(new File("accounts.xml"));
+            writeFile.println("<ACCOUNTS>");
+            for (String key : accounts.keySet()) {
+            	 writeFile.println("<PLAYER>");
+                 writeFile.println("<id>" + userAccount.getID() +"</id>");
+                 writeFile.println("<username>" + userAccount.getUsername() + "</username>");
+                 writeFile.println("<password>" + userAccount.getPassword() + "</password>");
+                 writeFile.println("<level>" + userAccount.getLevel() + "</level>");
+                 writeFile.println("</PLAYER>");
+            }
+            
+            writeFile.println("</ACCOUNTS>");
+            writeFile.flush();
+            writeFile.close();
+            
+		} catch(Exception e) {
+			System.out.println("CHANGE PASSWORD ERROR: " + e);
 		}
 	}
-//	
-//	private boolean checkSpace(int[][] board, int direction, int xPos, int yPos, int sign) {
-//		if(direction == 0) {
-//			if(sign == 0) {
-//				if(board[xPos][yPos] == 1 || board[xPos + 1][yPos] == 1 || board[xPos + 2][yPos] == 1) {
-//					return false;
-//				}
-//			} else if (sign == 1) {
-//				if(board[xPos][yPos] == 1 || board[xPos - 1][yPos] == 1 || board[xPos - 2][yPos] == 1) {
-//					return false;
-//				}
-//			}
-//		} else {
-//			if(sign == 0) {
-//				if(board[xPos][yPos] == 1 || board[xPos][yPos + 1] == 1 || board[xPos][yPos + 2] == 1) {
-//					return false;
-//				}
-//			} else if (sign == 1) {
-//				if(board[xPos][yPos] == 1 || board[xPos][yPos - 1] == 1 || board[xPos][yPos - 2] == 1) {
-//					return false;
-//				}
-//			}
-//		}
-//		return true;
-//	}
-//	
-//	private void inputShipRows(int[][] board, int xPos, int yPos, int sign) {
-//		if(sign == 0) {	// moving in the positive direction of the row
-//			board[xPos][yPos] = 1;
-//			board[xPos + 1][yPos] = 1;
-//			board[xPos + 2][yPos] = 1;
-//		} else if(sign == 1) {	// moving the negative direction of the row
-//			board[xPos][yPos] = 1;
-//			board[xPos - 1][yPos] = 1;
-//			board[xPos - 2][yPos] = 1;
-//		}
-//	}
-//	
-//	private void inputShipColumns(int[][] board, int xPos, int yPos, int sign) {
-//		if(sign == 0) {	// moving in the positive direction of the row
-//			board[xPos][yPos] = 1;
-//			board[xPos][yPos + 1] = 1;
-//			board[xPos][yPos + 2] = 1;
-//		} else if(sign == 1) {	// moving the negative direction of the row
-//			board[xPos][yPos] = 1;
-//			board[xPos][yPos + 1] = 1;
-//			board[xPos][yPos + 2] = 1;
-//		}
-//	}
 	
+	// Converts a player's board into a string
 	private String convertBoard(int[][] board) {
 		String boardStr = "";
 		for(int i = 0; i < board.length; i++) {
