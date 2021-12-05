@@ -1,3 +1,5 @@
+package Client;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -116,7 +118,7 @@ public class GameScene extends SceneBasic {
     private void drawattack(int coloumn, int row, Boolean hitornot) {
         GraphicsContext gc = canvas2.getGraphicsContext2D();
         int gaplengthfordraw = canvaHeight / 5;
-        if (hitornot == true ) {
+        if (hitornot == true) {
             gc.setFill(Color.ORANGE);
             gc.fillOval(gaplengthfordraw * coloumn, gaplengthfordraw * row, 80, 80);
         } else
@@ -155,15 +157,13 @@ public class GameScene extends SceneBasic {
         Button button = new Button(text);
         button.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         button.setOnAction(e -> buttonnumber = text);
-        System.out.println(buttonnumber);
         return button;
     }
     
     public void hitBoard() {
     	boolean hitornot = true;
     	try {
-			//Read other player move then hit
-			//Check if there is any move for the first player first move
+			boolean gameEnd = false;
 			connection = SceneManager.getSocket();
 			
 			PrintWriter outgoing = new PrintWriter( new OutputStreamWriter(connection.getOutputStream()));
@@ -172,27 +172,43 @@ public class GameScene extends SceneBasic {
 			BufferedReader incoming = new BufferedReader( new InputStreamReader(connection.getInputStream()));
 			String moveRes = incoming.readLine();
 			
-			if(moveRes.equals("HIT") || moveRes.equals("MISS")) {
+			if(moveRes.equals("DRAW")) {
+				gameEnd = true;
+				System.out.println("THE GAME IS A DRAW");
+			} else if (moveRes.equals("LOSE")) {
+				gameEnd = true;
+				System.out.println("YOU LOST");
+			} else if(moveRes.equals("HIT") || moveRes.equals("MISS")) {
 				String coordinates = incoming.readLine();
-				System.out.println(coordinates);
+				System.out.println(coordinates + " PREV PLAY COORDINATES");
 			} else if(moveRes.equals("NOMOVE")) {
 				
 			}
-			int calbuttonnumber = Integer.parseInt(buttonnumber) - 1;
-	        int coloumn = calbuttonnumber % 5;
-	        int row = calbuttonnumber / 5;
-	        
-			outgoing.println( row + "," + coloumn);
-			outgoing.flush();				// Information sent to the server
 			
-			String res = incoming.readLine();
-			if(res.equals("MISS")) {
-				hitornot = false;
-			}else {
-				hitornot = true;
+			if(!gameEnd) {
+				int calbuttonnumber = Integer.parseInt(buttonnumber) - 1;
+		        int coloumn = calbuttonnumber % 5;
+		        int row = calbuttonnumber / 5;
+		        
+				outgoing.println(row + "," + coloumn);
+				outgoing.flush();				// Information sent to the server
+				
+				String res = incoming.readLine();
+				if(res.contentEquals("WIN")) {
+					gameEnd = true;
+					System.out.println("YOU WON");
+				} else if(res.contentEquals("DRAW")) {
+					gameEnd = true;
+					System.out.println("THE GAME IS A DRAW");
+				} if(res.contentEquals("MISS")) {
+					hitornot = false;
+				}else {
+					hitornot = true;
+				}
+				drawattack(coloumn,row,hitornot);
+				System.out.println(res + " CURRENT PLAY RESULTS");
 			}
-			drawattack(coloumn, row,hitornot);
-			System.out.println(res);
+			
 		} catch(Exception e) {
 			System.out.println("PLAYER READY ERROR: " + e);
 		}
@@ -217,7 +233,7 @@ public class GameScene extends SceneBasic {
             }
             for (int c = 0; c < intArray.length; c++) {
                 int receivecoloumn = c % 5;
-                int receiverow = c / 5 ;
+                int receiverow = c / 5;
                 ships[receivecoloumn][receiverow] = intArray[c];
             }
         } catch (Exception e) {
