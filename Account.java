@@ -1,63 +1,68 @@
-//Author : Jack Peng
-public class Account {
-	private String username;
-	private String password;
-	private String backGroundColor;
-	private int id;
+package Server;
+// Author: Kidus Asmare Ayele. Abstract Account class which other account types inherit from.
 
-	// Constructor for account
-	public Account(int id, String username, String password, String backGroundColor) {
+public class Account {
+	private int id;			// Account id
+	private String username;	// Account username
+	private String password;	// Account password
+	private int level;
+	private String backgroundColor;
+
+	public Account(int id, String username, String password, int level, String backgroundColor) {
 		this.id = id;
 		this.username = username;
 		this.password = password;
-		this.backGroundColor = backGroundColor;
+		this.level = level;
+		this.backgroundColor = backgroundColor;
 	}
-
+	
+	public String getBackgroundColor() {
+		return this.backgroundColor;
+	}
+	
+	public void setBackgroundColor(String backgroundColor) {
+		this.backgroundColor = backgroundColor;
+	}
+	
+	public String getLevel() {
+		return Integer.toString(this.level);
+	}
+	
+	public void setLevel(int level) {
+		this.level = level;
+	}
+	
+	// Getter method for account's id
 	public String getID() {
-		return id + "";
+		return Integer.toString(this.id);
 	}
 
-	// username getter
+	// Getter method for account's username
 	public String getUsername() {
-		return username;
+		return this.username;
 	}
-
+	
+	// Getter method for account's password
 	public String getPassword() {
-		return password;
+		return this.password;
 	}
 
-	// verify password
-	public Boolean verifyPassword(String password) {
-		if (this.password.equals(password)) {
-			return true;
-		} else {
-			return false;
-		}
-
+	// Verifies an account's password
+	public boolean verifyPassword(String password) {
+		return this.password.equals(password);
 	}
-
-	// print username and class type
-	public String toString() {
-		String result = "Username: " + username + ", " + this.getClass();
-		return result;
-	}
-
-	// set a new password
-	public void setPassword(String newPassword) {
-		password = newPassword;
-
-	}
-
+	
 	public void setUsername(String newUsername) {
-		username = newUsername;
+		this.username = newUsername;
 	}
-
-	public String getBackGroundColor() {
-		return backGroundColor;
+	
+	// Changes an account's password
+	public void setPassword(String newPassword) {
+		this.password = newPassword;
 	}
-
-	public void setNewColor(String newColor) {
-		backGroundColor = newColor;
+	
+	// Prints the account's username and type of account
+	public String toString() {
+		return "username: " + this.username + ", " + this.getClass();
 	}
-
 }
