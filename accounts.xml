@@ -2,13 +2,15 @@
 <PLAYER>
 <id>1</id>
 <username>kidus</username>
-<password>kidus</password>
+<password>kid</password>
 <level>1</level>
+<background>blue</background>
 </PLAYER>
 <PLAYER>
 <id>2</id>
 <username>jack</username>
-<password>jack</password>
+<password>back</password>
 <level>1</level>
+<background>red</background>
 </PLAYER>
 </ACCOUNTS>

@@ -9,6 +9,7 @@ public class AccountsReader {
 		String username = "";
 		String password = "";
 		String level = "";
+		String backgroundColor = "";
 		
 		HashMap<String,Account> accountList = new HashMap<String,Account>();
 		try {
@@ -21,7 +22,8 @@ public class AccountsReader {
 					username = stripTags(readFile.nextLine());
 					password = stripTags(readFile.nextLine());
 					level = stripTags(readFile.nextLine());
-					Account account = new Account(Integer.parseInt(id), username, password, Integer.parseInt(level));
+					backgroundColor = stripTags(readFile.nextLine());
+					Account account = new Account(Integer.parseInt(id), username, password, Integer.parseInt(level), backgroundColor);
 					accountList.put(id, account);
 					readFile.nextLine();
 				}				

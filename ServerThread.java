@@ -76,6 +76,12 @@ public class ServerThread extends Thread {
 					} else if(currentPlayer == 1) {
 						changePassword(player2Input, player2Output);
 					}
+				} else if(command.equals("CHANGEU")) {
+					if(currentPlayer == 0) {
+						changeUsername(player1Input, player1Output);
+					} else if(currentPlayer == 1) {
+						changeUsername(player2Input, player2Output);
+					}
 				}
 				// change password
 			}
@@ -324,27 +330,73 @@ public class ServerThread extends Thread {
 			
 			if (!userAccount.verifyPassword(oldPass)) {
                 // Send error message for an invalid password
-                outgoing.println("Old Password is incorrect");
+                outgoing.println("WRONG_PASS");
                 outgoing.flush();
                 return;
             } else if (newPass.length() == 0) {
                 // Send error message for an invalid password
-                outgoing.println("New Password can not be empty");
+                outgoing.println("PASS_EMPTY");
                 outgoing.flush();
                 return;
             }
 			
 			// Change userAccount's password
             userAccount.setPassword(newPass);
+            outgoing.println("PASS_CHANGED");
+            outgoing.flush();
             
             PrintWriter writeFile = new PrintWriter(new File("accounts.xml"));
             writeFile.println("<ACCOUNTS>");
             for (String key : accounts.keySet()) {
             	 writeFile.println("<PLAYER>");
-                 writeFile.println("<id>" + userAccount.getID() +"</id>");
-                 writeFile.println("<username>" + userAccount.getUsername() + "</username>");
-                 writeFile.println("<password>" + userAccount.getPassword() + "</password>");
-                 writeFile.println("<level>" + userAccount.getLevel() + "</level>");
+                 writeFile.println("<id>" + accounts.get(key).getID() +"</id>");
+                 writeFile.println("<username>" + accounts.get(key).getUsername() + "</username>");
+                 writeFile.println("<password>" + accounts.get(key).getPassword() + "</password>");
+                 writeFile.println("<level>" + accounts.get(key).getLevel() + "</level>");
+                 writeFile.println("<background>" + accounts.get(key).getBackgroundColor() + "</background>");
+                 writeFile.println("</PLAYER>");
+            }
+            
+            writeFile.println("</ACCOUNTS>");
+            writeFile.flush();
+            writeFile.close();
+            
+		} catch(Exception e) {
+			System.out.println("CHANGE PASSWORD ERROR: " + e);
+		}
+	}
+	
+	synchronized public void changeUsername(BufferedReader incoming, PrintWriter outgoing) {
+		try {
+			Account userAccount;
+			String newUser = incoming.readLine();
+			if(currentPlayer == 0) {
+				userAccount = account1;
+			} else {
+				userAccount = account2;
+			}
+			
+			if (newUser.length() == 0) {
+                // Send error message for an invalid password
+                outgoing.println("USER_EMPTY");
+                outgoing.flush();
+                return;
+            }
+			
+			// Change userAccount's password
+            userAccount.setUsername(newUser);
+            outgoing.println("USER_CHANGED");
+            outgoing.flush();
+            
+            PrintWriter writeFile = new PrintWriter(new File("accounts.xml"));
+            writeFile.println("<ACCOUNTS>");
+            for (String key : accounts.keySet()) {
+            	 writeFile.println("<PLAYER>");
+                 writeFile.println("<id>" + accounts.get(key).getID() +"</id>");
+                 writeFile.println("<username>" + accounts.get(key).getUsername() + "</username>");
+                 writeFile.println("<password>" + accounts.get(key).getPassword() + "</password>");
+                 writeFile.println("<level>" + accounts.get(key).getLevel() + "</level>");
+                 writeFile.println("<background>" + accounts.get(key).getBackgroundColor() + "</background>");
                  writeFile.println("</PLAYER>");
             }
             

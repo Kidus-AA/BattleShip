@@ -6,12 +6,22 @@ public class Account {
 	private String username;	// Account username
 	private String password;	// Account password
 	private int level;
+	private String backgroundColor;
 
-	public Account(int id, String username, String password, int level) {
+	public Account(int id, String username, String password, int level, String backgroundColor) {
 		this.id = id;
 		this.username = username;
 		this.password = password;
 		this.level = level;
+		this.backgroundColor = backgroundColor;
+	}
+	
+	public String getBackgroundColor() {
+		return this.backgroundColor;
+	}
+	
+	public void setBackgroundColor(String backgroundColor) {
+		this.backgroundColor = backgroundColor;
 	}
 	
 	public String getLevel() {
@@ -40,6 +50,10 @@ public class Account {
 	// Verifies an account's password
 	public boolean verifyPassword(String password) {
 		return this.password.equals(password);
+	}
+	
+	public void setUsername(String newUsername) {
+		this.username = newUsername;
 	}
 	
 	// Changes an account's password
