@@ -1,4 +1,4 @@
-// Author: Kidus Asmare Ayele. Server commands for client communication a
+// Author: Kidus Asmare Ayele. Server commands for client communication
 
 package Server;
 
@@ -89,6 +89,7 @@ public class ServerThread extends Thread {
                 		storeColor(account2, player2Input);
                 	}	
 				}
+			}
 		} catch(Exception e) {
 			System.out.println("SERVER THREAD ERROR: " + e);
 			e.printStackTrace();
@@ -417,7 +418,7 @@ public class ServerThread extends Thread {
 		try {
 			String newColor = incoming.readLine();
 			System.out.println("Received: " + newColor);
-			userAccount.setNewColor(newColor);
+			userAccount.setBackgroundColor(newColor);
 				try {
 					PrintWriter file = new PrintWriter("accounts.xml");
 					file.println("<ACCOUNTS>");
@@ -428,7 +429,7 @@ public class ServerThread extends Thread {
 								file.println("         " + "<id>" + id + "</id>");
 								file.println("         " + "<Username>" + accounts.get(id).getUsername() + "</Username>");
 								file.println("         " + "<Password>" + accounts.get(id).getPassword() + "</Password>");
-								file.println("         " + "<Background>" + accounts.get(id).getBackGroundColor() + "</Background>");
+								file.println("         " + "<Background>" + accounts.get(id).getBackgroundColor() + "</Background>");
 								file.println("         " + "<Level>" + accounts.get(id).getLevel() + "</Level>");
 								file.println("     "+"</PLAYER>");
 						}
