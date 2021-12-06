@@ -1,16 +1,14 @@
 <ACCOUNTS>
-<PLAYER>
-<id>1</id>
-<username>kidus</username>
-<password>kid</password>
-<level>1</level>
-<background>blue</background>
-</PLAYER>
-<PLAYER>
-<id>2</id>
-<username>jack</username>
-<password>back</password>
-<level>1</level>
-<background>red</background>
-</PLAYER>
+     <PLAYER>
+         <id>2</id>
+         <Username>JackChange</Username>
+         <Password>2</Password>
+         <Background>Blue</Background>
+     </PLAYER>
+     <PLAYER>
+         <id>12</id>
+         <Username>Kidus1</Username>
+         <Password>1</Password>
+         <Background>Yellow</Background>
+     </PLAYER>
 </ACCOUNTS>

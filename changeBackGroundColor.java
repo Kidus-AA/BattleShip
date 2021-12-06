@@ -1,7 +1,5 @@
 
 // Author: Jack P
-
-package Client;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -20,7 +18,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
 public class changeBackGroundColor extends SceneBasic {
-	Button cancelButton = new Button("Back to GameLobby");
+	Button cancelButton = new Button("Back to GameSetting");
 	Button redButton = new Button("Red");
 	Button blueButton = new Button("Blue");
 	Button yellowButton = new Button("Yellow");
@@ -38,7 +36,7 @@ public class changeBackGroundColor extends SceneBasic {
 		blueButton.setMinWidth(WIDTH);
 		yellowButton.setMinWidth(WIDTH);
 
-		cancelButton.setOnAction(e -> SceneManager.setGameLobbyScene());
+		cancelButton.setOnAction(e -> SceneManager.setGameSettingScene());
 		redButton.setOnAction(e -> redChange());
 		blueButton.setOnAction(e -> blueChange());
 		yellowButton.setOnAction(e -> yellowChange());

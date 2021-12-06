@@ -1,56 +1,65 @@
-package Server;
+
+//Author Jack
 import java.io.*;
 import java.util.*;
 
 public class AccountsReader {
-	
-	public static HashMap<String,Account> readFile(String file) {
-		String id = "";
-		String username = "";
-		String password = "";
-		String level = "";
-		String backgroundColor = "";
-		
-		HashMap<String,Account> accountList = new HashMap<String,Account>();
-		try {
-			Scanner readFile = new Scanner( new File(file));
-			readFile.nextLine();
-			while(readFile.hasNextLine()) {
-				String accountType = readFile.nextLine();
-				if(accountType.contains("PLAYER")) {
-					id = stripTags(readFile.nextLine());
-					username = stripTags(readFile.nextLine());
-					password = stripTags(readFile.nextLine());
-					level = stripTags(readFile.nextLine());
-					backgroundColor = stripTags(readFile.nextLine());
-					Account account = new Account(Integer.parseInt(id), username, password, Integer.parseInt(level), backgroundColor);
-					accountList.put(id, account);
-					readFile.nextLine();
-				}				
-			}	
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println("READ ACCOUNTS ERROR: " + e);
-		}	
-		return accountList;
-	}
-	
-	private static String stripTags(String line) {
-		String cleanLine = "";
-		boolean read = true;
-		for(int i = 0; i < line.length(); i++) {
-			if(line.charAt(i) == '<') {
-				read = false;
-			}
-			
-			if(read) {
-				cleanLine = cleanLine + line.charAt(i);
-			}
-			
-			if (line.charAt(i) == '>') {
-				read = true;
-			}
+
+	static HashMap<String, Account> dataSet = new HashMap<String, Account>();
+
+	public static HashMap<String, Account> readFile(String filename) {
+
+		File dataFile = new File(filename);
+		if (!dataFile.exists()) {
+			System.out.println("No data file found.");
+			System.exit(1);
 		}
-		return cleanLine.trim();
+		try (Scanner scanner = new Scanner(dataFile)) {
+			while (scanner.hasNextLine()) {
+				String input = scanner.nextLine();
+				int separatorPosition = input.indexOf('<');
+				int separatorPosition2 = input.indexOf('>');
+				String next = input.substring(separatorPosition + 1, separatorPosition2);
+				if (next.equals("PLAYER")) {
+					String input1 = "";
+					while (scanner.hasNextLine() && !input1.equals("/PLAYER")) {
+						input1 = scanner.nextLine();
+						String currentLine = input1;
+						int separatorPosition3 = input1.indexOf('<');
+						int separatorPosition4 = input1.indexOf('>');
+						int separatorPosition5 = input1.indexOf('<', separatorPosition4 + 1);
+						input1 = input1.substring(separatorPosition3 + 1, separatorPosition4);
+						if (input1.equals("id")) {
+							String id = currentLine.substring(separatorPosition4 + 1, separatorPosition5);
+							// line of username
+							String usernameLine = scanner.nextLine();
+							int separatorPosition6 = usernameLine.indexOf('>');
+							int separatorPosition7 = usernameLine.indexOf('<', separatorPosition6 + 1);
+							String username = usernameLine.substring(separatorPosition6 + 1, separatorPosition7);
+							// line of passowrd
+							String passwordLine = scanner.nextLine();
+							int separatorPosition8 = passwordLine.indexOf('>');
+							int separatorPosition9 = passwordLine.indexOf('<', separatorPosition8 + 1);
+							String password = passwordLine.substring(separatorPosition8 + 1, separatorPosition9);
+							// line of profile
+							String backLine = scanner.nextLine();
+							int separatorPositionA = backLine.indexOf('>');
+							int separatorPositionB = backLine.indexOf('<', separatorPositionA + 1);
+							String backGround = backLine.substring(separatorPositionA + 1, separatorPositionB);
+
+							Account player = new Account(Integer.parseInt(id), username, password, backGround);
+							dataSet.put(id, player);
+						}
+
+					}
+				}
+
+			}
+
+		} catch (IOException e) {
+			System.out.println("Error in data file.");
+			System.exit(1);
+		}
+		return dataSet;
 	}
 }
