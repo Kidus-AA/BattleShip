@@ -1,5 +1,5 @@
+// Author: Kidus Asmare Ayele. Class extending application that does the launch.
 package Client;
-// Author: Kidus Asmare Ayele and Eiler Byberi. Class extending application that does the launch.
 
 import java.io.*;
 import java.net.*;
@@ -17,14 +17,17 @@ public class Store extends Application {
 		sceneManager.setStage(stage);	// Sets the stage
 		SceneManager.setLoginScene();
 		stage.show();
+		stage.setResizable(false);
 	}
 	
 	public void stop() {
 		try {
 			connection = SceneManager.getSocket();
-			PrintWriter outgoing = new PrintWriter( new OutputStreamWriter(connection.getOutputStream()));
-			outgoing.println("QUIT");
-			outgoing.flush();
+			if(connection != null) {
+				PrintWriter outgoing = new PrintWriter( new OutputStreamWriter(connection.getOutputStream()));
+				outgoing.println("QUIT");
+				outgoing.flush();
+			}
 		} catch (Exception e) {
 			System.out.println("ERROR: " + e);
 		}

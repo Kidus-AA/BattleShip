@@ -1,0 +1,78 @@
+
+package Client;
+import javafx.geometry.Pos;
+import javafx.stage.Stage;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.GridPane;
+import javafx.geometry.Insets;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.util.*;
+import javafx.scene.paint.Color;
+
+public class changeUsernameScene extends SceneBasic {
+	private Label newText = new Label("New Username");
+	private TextField newField = new TextField();
+	private Button button = new Button("Change Username");
+	private Label errorMessage = new Label();
+	VBox root = new VBox();
+
+	public changeUsernameScene() {
+		super("Change Username");
+		// text message
+		Label message = new Label(titleText);
+		message.setFont(new Font(40));
+		// Creating Grid Pane
+		GridPane gridPane = new GridPane();
+		errorMessage.setTextFill(Color.RED);
+		gridPane.setMinSize(400, 200);
+		gridPane.setPadding(new Insets(10, 10, 10, 10));
+		gridPane.setVgap(5);
+		gridPane.setHgap(5);
+		gridPane.add(newText, 0, 0);
+		gridPane.add(newField, 1, 0);
+		gridPane.add(button, 1, 1);
+		gridPane.add(errorMessage, 1, 2);
+		gridPane.setAlignment(Pos.TOP_CENTER);
+		root.getChildren().addAll(gridPane);
+		VBox container = new VBox(10, message, root);
+		container.setAlignment(Pos.CENTER);
+		button.setOnAction(e -> change());
+		scene = new Scene(container, 450, 250);
+	}
+
+	private void change() {
+		try {
+			Socket connection = SceneManager.getSocket(); // Server socket
+			PrintWriter outgoing; // Stream for sending data.
+			outgoing = new PrintWriter(connection.getOutputStream());
+			outgoing.println("CHANGEU");
+
+			String newInput = newField.getText();
+			outgoing.println(newInput);
+			outgoing.flush(); 
+			
+			BufferedReader incoming = new BufferedReader( 
+                    new InputStreamReader(connection.getInputStream()) );
+            System.out.println("Waiting for result...");
+            String reply = incoming.readLine();
+            
+            if(reply.equals("USER_EMPTY")) {
+            	errorMessage.setText("Username cannot be empty");
+            } else if(reply.equals("USER_CHANGED")) {
+            	errorMessage.setText("");
+            	SceneManager.setGameSettingScene();
+            }
+		} catch (Exception e) {
+			System.out.println("Error:  " + e);
+		}
+	}
+}

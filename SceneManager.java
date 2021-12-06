@@ -1,6 +1,7 @@
-package Client;
-// Author: Chris Fietkiewicz. For Project #4.
+// Author: Kidus, Andy. For Project #4.
 // Description: Manages changes from one scene to another scene.
+
+package Client;
 import java.net.Socket;
 import java.util.ArrayList;
 import javafx.scene.Scene;
@@ -12,9 +13,12 @@ public class SceneManager {
 	private static LoginScene loginScene; // For user login
 	private static GameLobby gameLobbyScene;
 	private static GameScene gameScene;
+	private static GameSettingScene gameSettingScene;
 //	private static AdminScene adminScene; // Menu for administrator accounts
 //	private static CustomerScene customerScene; // Menu for client accounts
-//	private static ChangePasswordScene changePasswordScene; // Form for all users to change password
+	private static changePasswordScene changePasswordScene; // Form for all users to change password
+	private static changeUsernameScene changeUsernameScene;
+	private static changeBackGroundColor  changeBackgroundScene;
 //	private static AccountListScene accountListScene; // Displays accounts (for administrators only)
 //	private static ProfileScene profileScene; // Displays client profile (for clients only)
 	private static SettingsScene settingsScene; // Allows user to change Socket host and port number
@@ -26,9 +30,12 @@ public class SceneManager {
 		loginScene = new LoginScene();
 		gameLobbyScene = new GameLobby();
 		gameScene = new GameScene();
+		gameSettingScene = new GameSettingScene();
 //		adminScene = new AdminScene();
 //		customerScene = new CustomerScene();
-//		changePasswordScene = new ChangePasswordScene();
+		changePasswordScene = new changePasswordScene();
+		changeUsernameScene= new changeUsernameScene();
+		changeBackgroundScene = new changeBackGroundColor();
 //		accountListScene = new AccountListScene();
 //		profileScene = new ProfileScene();
 		settingsScene = new SettingsScene();
@@ -75,9 +82,9 @@ public class SceneManager {
 //	}
 //	
 //	// Change view to ChangePasswordScene
-//	public static void setChangePasswordScene() {
-//		stage.setScene(changePasswordScene.getScene());
-//	}
+	public static void setChangePasswordScene() {
+		stage.setScene(changePasswordScene.getScene());
+	}
 //	
 //	// Change view to AccountListScene
 //	public static void setAccountListScene() {
@@ -95,7 +102,17 @@ public class SceneManager {
 	public static void setSettingsScene() {
 		stage.setScene(settingsScene.getScene());
 	}
-//	
+	public static void setGameSettingScene() {
+		stage.setScene(gameSettingScene.getScene());
+	}
+	public static void setChangeUsernameScene() {
+		stage.setScene(changeUsernameScene.getScene());
+	}
+	
+	public static void setBackgroundScene() { 
+		stage.setScene(changeBackgroundScene.getScene());
+	}
+//	a
 //	// Change view to placeOrderScene
 //	public static void setPlaceOrderScene() {
 //		placeOrderScene.getInventory(); // Make placeOrderScene request inventory list from server
