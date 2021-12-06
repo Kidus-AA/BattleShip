@@ -53,7 +53,7 @@ public class changeUsernameScene extends SceneBasic {
 			PrintWriter outgoing; // Stream for sending data.
 			outgoing = new PrintWriter(connection.getOutputStream());
 			System.out.println("Sending... CHANGE_USERNAME");
-			outgoing.println("CHANGE_USERNAME");
+			outgoing.println("CHANGEU");
 			outgoing.flush();
 			// outgoing.close(); // CAUSES SOCKET TO CLOSE?
 

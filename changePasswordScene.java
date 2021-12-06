@@ -62,7 +62,7 @@ public class changePasswordScene extends SceneBasic {
 			PrintWriter outgoing; // Stream for sending data.
 			outgoing = new PrintWriter(connection.getOutputStream());
 			System.out.println("Sending... CHANGE_PASSWORD");
-			outgoing.println("CHANGE_PASSWORD");
+			outgoing.println("CHANGEP");
 			outgoing.flush();
 			// outgoing.close(); // CAUSES SOCKET TO CLOSE?
 

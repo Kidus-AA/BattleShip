@@ -1,4 +1,4 @@
-// Author: Kidus Asmare Ayele. Server commands for client communication
+// Author: Kidus Asmare Ayele. Server commands for client communication a
 
 package Server;
 
@@ -82,9 +82,13 @@ public class ServerThread extends Thread {
 					} else if(currentPlayer == 1) {
 						changeUsername(player2Input, player2Output);
 					}
+				}else if(command.equals("STORE_COLOR")) { //edit by J
+					if(currentPlayer == 0) {
+						storeColor(account1, player1Input);
+                	} else if(currentPlayer == 1) {
+                		storeColor(account2, player2Input);
+                	}	
 				}
-				// change password
-			}
 		} catch(Exception e) {
 			System.out.println("SERVER THREAD ERROR: " + e);
 			e.printStackTrace();
@@ -408,7 +412,37 @@ public class ServerThread extends Thread {
 			System.out.println("CHANGE PASSWORD ERROR: " + e);
 		}
 	}
-	
+	public void storeColor(Account userAccount, BufferedReader incoming) {
+		String id;
+		try {
+			String newColor = incoming.readLine();
+			System.out.println("Received: " + newColor);
+			userAccount.setNewColor(newColor);
+				try {
+					PrintWriter file = new PrintWriter("accounts.xml");
+					file.println("<ACCOUNTS>");
+					for (int i = 0; i < 100; i++) {
+						id = i + "";
+						if (accounts.containsKey(id)) {
+							    file.println("     "+"<PLAYER>");
+								file.println("         " + "<id>" + id + "</id>");
+								file.println("         " + "<Username>" + accounts.get(id).getUsername() + "</Username>");
+								file.println("         " + "<Password>" + accounts.get(id).getPassword() + "</Password>");
+								file.println("         " + "<Background>" + accounts.get(id).getBackGroundColor() + "</Background>");
+								file.println("         " + "<Level>" + accounts.get(id).getLevel() + "</Level>");
+								file.println("     "+"</PLAYER>");
+						}
+					}
+					file.println("</ACCOUNTS>");
+					file.close();
+				} catch (IOException e) {
+					System.out.println("Error writing data file.");
+					System.exit(1);
+				}
+		} catch (Exception e) {
+			System.out.println("Error: " + e);
+		}
+	}
 	// Converts a player's board into a string
 	private String convertBoard(int[][] board) {
 		String boardStr = "";
